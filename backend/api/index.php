@@ -14,17 +14,12 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
 
-
-
-$method = $_SERVER["REQUEST_METHOD"];
-
-
 $method = $_SERVER["REQUEST_METHOD"];
 $route  = $_GET["route"] ?? null;
 $id     = $_GET["id"] ?? null;
 
 
-if ($route === "stores") {
+if ($route === "stores") {//get post and delete for stores
 
     if ($method === "GET" && !$id) {
         echo json_encode(get_stores());
@@ -41,38 +36,15 @@ if ($route === "stores") {
         exit;
     }
 
-    if ($method === "DELETE" && $id && !$sub) {
+    if ($method === "DELETE" && $id) {
         delete_store($id);
-        echo json_encode(["success" => true]);
-        exit;
-    }
-
-    if ($method === "GET" && $id && $sub === "items") {
-        echo json_encode(get_items_by_store($id));
-        exit;
-    }
-    
-    if ($method === "POST" && $id && $sub === "items") {
-
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        $item = new Item(
-            null,
-            $id,
-            $data["name"],
-            $data["quantity"] ?? 1,
-            0
-        );
-
-        insert_item($item);
-
         echo json_encode(["success" => true]);
         exit;
     }
 }
 
 
-if ($route === "items") {
+if ($route === "items") {//get post put and delete for items. Also includes a route for getting all items from a store
 
     if ($method === "GET") {
 

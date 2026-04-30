@@ -7,6 +7,7 @@ export default function App() {
     const [stores, setStores] = useState([]);
     const [newStore, setNewStore] = useState("");
     const [selectedStore, setSelectedStore] = useState("");
+    const [filterStore, setFilterStore] = useState("");
 
     const [items, setItems] = useState([]);
     const [itemName, setItemName] = useState("");
@@ -19,10 +20,18 @@ export default function App() {
         setStores(await res.json());
     };
     
-    //same as stores
-    const loadItems = async () => {
-        const res = await fetch(`${API}?route=items`);
-        setItems(await res.json());
+    //If there is a store selected it will only get from that store
+    const loadItems = async (storeId = filterStore) => {
+    let url;
+
+    if (storeId) {
+        url = `${API}?route=items&store_id=${storeId}`;
+    } else {
+        url = `${API}?route=items`;
+    }
+
+    const res = await fetch(url);
+    setItems(await res.json());
     };
 
     //on page load, loads all stores as well as loads all items to the shopping list
@@ -31,6 +40,9 @@ export default function App() {
         loadItems();
     }, []);
 
+    useEffect(() => {//whenever filter store changes loads items
+        loadItems();
+    }, [filterStore]);
     
     const createStore = async () => {
         if (!newStore.trim()) return;//stores cant be made with no input or empty spaces
@@ -51,7 +63,7 @@ export default function App() {
         });
 
         setSelectedStore("");//removes that store from selection
-
+        setFilterStore("");
         loadStores();//refresh stores and items list
         loadItems();
     };
@@ -138,7 +150,7 @@ export default function App() {
         <div className="container py-4">
 
             
-            <h2 className="mb-4">Fantastical Computerized Shopping List</h2>
+            <h3 className="mb-4">Fantastical Computerized Shopping List</h3>
             <div className="row mb-3">
                 <div className="col-md-6">
                     <div className="card p-3 h-100">
@@ -185,10 +197,28 @@ export default function App() {
             </div>
                 <div className="card p-3">
                     <h5>Shopping List: </h5>
-
+                    
+                    <select
+                        className="form-select mb-3"
+                        style={{ maxWidth: "250px" }}
+                        value = {filterStore}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setFilterStore(value);
+                            loadItems(value);
+                        }}
+                    >
+                        <option value="">All Stores</option>
+                        {stores.map((s) => (
+                            <option key={s.id} value={s.id}>
+                                {s.name}
+                            </option>
+                        ))}
+                    </select>
+                    
                     {items.map((item) => (
-                    <div key={item.id} className="border-bottom py-2">
-
+                        <div key={item.id} className="border-bottom py-2">
+                         
                         {editItem?.id === item.id ? (
                             <div className="d-flex gap-2 align-items-center">
 

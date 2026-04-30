@@ -38,6 +38,41 @@ function get_items() {
     return $item_array;//returns that array
 }
 
+function get_items_by_store($storeId) {//gets items from a specific store
+    global $database;
+
+    $query = "
+        SELECT items.*, stores.name AS store_name
+        FROM items
+        JOIN stores ON items.store_id = stores.id
+        WHERE items.store_id = :store_id
+        ORDER BY items.created_at DESC
+    ";
+
+    $statement = $database->prepare($query);//creates prepares and executes the query
+    $statement->bindValue(":store_id", $storeId);
+    $statement->execute();
+
+    $items = $statement->fetchAll(PDO::FETCH_ASSOC);
+    $statement->closeCursor();
+
+    $item_array = [];
+
+    foreach ($items as $item) {//puts all of them into an array and returns it
+        $item_array[] = [
+            "id" => $item["id"],
+            "store_id" => $item["store_id"],
+            "name" => $item["name"],
+            "quantity" => $item["quantity"],
+            "checked" => $item["checked"],
+            "created_at" => $item["created_at"],
+            "store_name" => $item["store_name"]
+        ];
+    }
+
+    return $item_array;
+}
+
 function insert_item($item) {//takes an item object and posts it to database
     global $database;
     //inserts store_id name and quantity into database, db handles item id and checked status
